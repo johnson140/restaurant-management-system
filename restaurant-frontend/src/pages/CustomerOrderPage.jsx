@@ -14,8 +14,10 @@ export default function CustomerOrderPage() {
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
 
+
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [paymentMethod, setPaymentMethod] = useState("CASH");
+  const [paymentRequested, setPaymentRequested] = useState(false);
 
   const [placingOrder, setPlacingOrder] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState(null);
@@ -44,7 +46,7 @@ export default function CustomerOrderPage() {
 
         switch (latest.status) {
 
-            case "PAYMENT_PENDING":
+            case "PAYMENT_REQUESTED":
                 setScreen("PAYMENT");
                 break;
 
@@ -103,7 +105,7 @@ export default function CustomerOrderPage() {
                   "PREPARING",
                   "READY",
                   "SERVED",
-                  "PAYMENT_PENDING"
+                  "PAYMENT_REQUESTED"
               ];
 
               if (activeStatuses.includes(latestOrder.status)) {
@@ -119,7 +121,7 @@ export default function CustomerOrderPage() {
                           setScreen("TRACKING");
                           break;
 
-                      case "PAYMENT_PENDING":
+                      case "PAYMENT_REQUESTED":
                           setScreen("PAYMENT");
                           break;
 
@@ -302,13 +304,19 @@ export default function CustomerOrderPage() {
                 Choose your payment method.
             </p>
 
-            <select
-                value={paymentMethod}
-                onChange={(e)=>
-                    setPaymentMethod(e.target.value)
-                }
-                style={styles.input}
-            >
+           <select
+               value={paymentMethod}
+               disabled={paymentRequested}
+               onChange={(e) =>
+                   setPaymentMethod(e.target.value)
+               }
+               style={{
+                   ...styles.input,
+                   backgroundColor: paymentRequested ? "#f3f3f3" : "#fff",
+                   cursor: paymentRequested ? "not-allowed" : "pointer",
+                   opacity: paymentRequested ? 0.7 : 1
+               }}
+           >
                 <option value="CASH">
                     Cash
                 </option>
@@ -323,19 +331,56 @@ export default function CustomerOrderPage() {
 
             </select>
 
-            <button
-                style={styles.primaryButton}
-            >
-                Pay Now
-            </button>
+           <button
+               style={styles.primaryButton}
+               disabled={paymentRequested}
+
+               onClick={async () => {
+
+                   setPaymentRequested(true);
+
+                   await fetch(
+                       `${API_BASE}/orders/${currentOrder.id}/status`,
+                       {
+                           method: "PATCH",
+                           headers: {
+                               "Content-Type": "application/json"
+                           },
+                           body: JSON.stringify({
+                               status: "PAYMENT_REQUESTED"
+                           })
+                       }
+                   );
+
+               }}
+           >
+               {paymentRequested
+                   ? "Payment Request Sent"
+                   : "Pay Now"}
+           </button>
+
+            {paymentRequested && (
+                <p
+                    style={{
+                        marginTop: 15,
+                        fontWeight: 600,
+                        color: "#2e7d32"
+                    }}
+                >
+                    Payment Method: {paymentMethod}
+                </p>
+            )}
 
             <p
                 style={{
                     marginTop:20,
-                    color:"#888"
+                    color:"#666",
+                    fontWeight:600
                 }}
             >
-                Waiting for cashier confirmation...
+                {paymentRequested
+                    ? "⏳ Waiting for cashier confirmation..."
+                    : "Press Pay Now to notify the cashier."}
             </p>
 
         </div>
@@ -397,7 +442,7 @@ export default function CustomerOrderPage() {
                                     "Content-Type":"application/json"
                                 },
                                 body: JSON.stringify({
-                                    status:"PAYMENT_PENDING"
+                                    status: "PAYMENT_REQUESTED"
                                 })
                             }
                         );
@@ -409,6 +454,21 @@ export default function CustomerOrderPage() {
                     I'm Ready To Pay
                 </button>
             )}
+
+        </div>
+    );
+  }
+
+  if (screen === "REVIEW" && currentOrder) {
+
+    return (
+        <div style={styles.successPage}>
+
+            <h1>Payment Successful ✅</h1>
+
+            <p>
+                ★★★★★ Leave a Review (coming soon)
+            </p>
 
         </div>
     );

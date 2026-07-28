@@ -36,6 +36,11 @@ public class OrderController {
         return orderService.getLatestOrderForTable(tableNumber);
     }
 
+    @GetMapping("/payments/pending")
+    public List<Order> getPendingPayments() {
+        return orderService.getPendingPayments();
+    }
+
     @PatchMapping("/{id}/status")
     public Order updateStatus(
             @PathVariable int id,

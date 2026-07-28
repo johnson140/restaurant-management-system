@@ -92,6 +92,13 @@ public class OrderServiceImpl implements OrderService {
                         new RuntimeException("Order not found."));
     }
 
+    @Override
+    public List<Order> getPendingPayments() {
+        return orderRepository.findByStatusOrderByCreatedAtAsc(
+                "PAYMENT_REQUESTED"
+        );
+    }
+
 
     @Override
     public Order getLatestOrderForTable(int tableNumber) {
@@ -115,7 +122,7 @@ public class OrderServiceImpl implements OrderService {
             case "PREPARING":
             case "READY":
             case "SERVED":
-            case "PAYMENT_PENDING":
+            case "PAYMENT_REQUESTED":
             case "PAID":
             case "COMPLETED":
 
@@ -130,10 +137,12 @@ public class OrderServiceImpl implements OrderService {
             order.setServedAt(LocalDateTime.now());
         }
 
-        if (newStatus.equals("PAID")) {
+        if ("PAID".equals(newStatus)) {
             order.setPaidAt(LocalDateTime.now());
         }
 
         return orderRepository.save(order);
     }
+
+
 }

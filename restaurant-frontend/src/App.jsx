@@ -1,5 +1,6 @@
 import { Routes, Route } from "react-router-dom";
 
+
 import Layout from "./components/layout/Layout";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { useAuth } from "./context/AuthContext";
@@ -14,6 +15,7 @@ import Login from "./pages/Login";
 import KitchenQueue from "./pages/chef/KitchenQueue";
 import ServiceBoard from "./pages/waiter/ServiceBoard";
 
+import CashierPage from "./pages/CashierPage";
 // NEW
 import CustomerOrderPage from "./pages/CustomerOrderPage";
 
@@ -105,6 +107,10 @@ export default function App() {
           </ProtectedRoute>
         }
       />
+    <Route
+        path="/cashier"
+        element={<CashierPage />}
+    />
 
       <Route
         path="/staff"
@@ -120,5 +126,7 @@ export default function App() {
       />
 
     </Routes>
+
+
   );
 }
