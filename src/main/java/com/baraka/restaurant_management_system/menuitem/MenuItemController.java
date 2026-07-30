@@ -26,18 +26,18 @@ public class MenuItemController {
     }
 
     @GetMapping("/{id}")
-    public MenuItem getMenuItemById(@PathVariable int id) {
+    public MenuItem getMenuItemById(@PathVariable("id") int id) {
         return menuItemService.getMenuItemById(id);
     }
 
     @PutMapping("/{id}")
-    public MenuItem updateMenuItem(@PathVariable int id,
+    public MenuItem updateMenuItem(@PathVariable("id") int id,
                                    @Valid @RequestBody MenuItem menuItem) {
         return menuItemService.updateMenuItem(id, menuItem);
     }
 
     @DeleteMapping("/{id}")
-    public void deleteMenuItem(@PathVariable int id) {
+    public void deleteMenuItem(@PathVariable("id") int id) {
         menuItemService.deleteMenuItem(id);
     }
 }

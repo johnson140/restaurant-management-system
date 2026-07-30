@@ -52,12 +52,18 @@ public class SecurityConfig {
         return http.build();
     }
 
+    // DEV-ONLY CORS: allows any origin (localhost, your LAN IP, your
+    // phone's address, whatever port Vite picks) so you don't have to
+    // edit this file every time you test from a different device.
+    // Tighten this to a real allow-list before this ever goes to
+    // production — allowedOriginPatterns("*") is intentionally permissive.
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
 
         CorsConfiguration configuration = new CorsConfiguration();
 
-        configuration.setAllowedOrigins(List.of("http://localhost:5173"));
+        configuration.setAllowedOriginPatterns(List.of("*"));
+
         configuration.setAllowedMethods(List.of(
                 "GET",
                 "POST",
@@ -66,6 +72,7 @@ public class SecurityConfig {
                 "DELETE",
                 "OPTIONS"
         ));
+
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
 

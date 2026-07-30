@@ -37,6 +37,16 @@ public class Order {
 
     private int estimatedPreparationTime;
 
+    @Column(nullable = true)
+    private Integer rating; // 1-5, null if no review left
+
+    @Column(nullable = true, length = 1000)
+    private String reviewComment;
+
+    @Column(nullable = true)
+    private Boolean reviewRead = false;
+
+
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
     @com.fasterxml.jackson.annotation.JsonManagedReference
     private List<OrderItem> items;
@@ -138,4 +148,13 @@ public class Order {
     public void setEstimatedPreparationTime(int estimatedPreparationTime) {
         this.estimatedPreparationTime = estimatedPreparationTime;
     }
+
+    public Integer getRating() { return rating; }
+    public void setRating(Integer rating) { this.rating = rating; }
+    public String getReviewComment() { return reviewComment; }
+    public void setReviewComment(String reviewComment) { this.reviewComment = reviewComment; }
+    public Boolean getReviewRead() { return reviewRead; }
+    public void setReviewRead(Boolean reviewRead) { this.reviewRead = reviewRead; }
+
+
 }

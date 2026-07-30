@@ -38,6 +38,8 @@ public class MenuItemServiceImpl implements MenuItemService {
         existingMenuItem.setName(updatedMenuItem.getName());
         existingMenuItem.setPrice(updatedMenuItem.getPrice());
         existingMenuItem.setAvailable(updatedMenuItem.isAvailable());
+        existingMenuItem.setCategory(updatedMenuItem.getCategory());
+        existingMenuItem.setVeg(updatedMenuItem.getVeg());
 
         return menuItemRepository.save(existingMenuItem);
     }
@@ -51,4 +53,5 @@ public class MenuItemServiceImpl implements MenuItemService {
 
         menuItemRepository.deleteById(id);
     }
+
 }

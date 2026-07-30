@@ -1,0 +1,149 @@
+/* ===========================================================
+   DESIGN TOKENS
+   Append this AFTER the existing :root / [data-theme="dark"]
+   block in global.css. It extends those variables — it does not
+   replace --bg-page, --bg-surface, --text-primary, etc., which
+   stay exactly as they are so nothing already using them breaks.
+=========================================================== */
+
+:root {
+  /* -----------------------------------------------------------
+     COLOR — semantic roles
+     App-wide primary is blue. Orange is reserved for the
+     Customer-facing experience only (see --color-accent-customer)
+     so front-of-house keeps its own warmth without staff/admin
+     inheriting a second, uncoordinated brand color.
+  ----------------------------------------------------------- */
+  --color-primary: #2563eb;
+  --color-primary-hover: #1d4ed8;
+  --color-primary-soft: #dbeafe;
+  --color-primary-soft-text: #1d4ed8;
+
+  --color-accent-customer: #ff6b00;
+  --color-accent-customer-hover: #e65f00;
+  --color-accent-customer-soft: #fff1e6;
+
+  --color-success: #16a34a;
+  --color-success-hover: #15803d;
+  --color-success-soft: #dcfce7;
+  --color-success-soft-text: #15803d;
+
+  --color-warning: #d97706;
+  --color-warning-hover: #b45309;
+  --color-warning-soft: #fef9c3;
+  --color-warning-soft-text: #a16207;
+
+  --color-danger: #dc2626;
+  --color-danger-hover: #b91c1c;
+  --color-danger-soft: #fee2e2;
+  --color-danger-soft-text: #b91c1c;
+
+  --color-info: #2563eb;
+  --color-info-soft: #dbeafe;
+  --color-info-soft-text: #1d4ed8;
+
+  --color-neutral-soft: #f1f5f9;
+  --color-neutral-soft-text: #475569;
+
+  /* -----------------------------------------------------------
+     SPACING SCALE — 4px base
+  ----------------------------------------------------------- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+
+  /* -----------------------------------------------------------
+     RADIUS SCALE
+     sm  = inputs, chips, small controls
+     md  = buttons, badges
+     lg  = cards, panels
+     xl  = modals, hero surfaces, full-screen states
+     full = pills / avatars
+  ----------------------------------------------------------- */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 999px;
+
+  /* -----------------------------------------------------------
+     TYPE SCALE
+  ----------------------------------------------------------- */
+  --font-size-xs: 12px;
+  --font-size-sm: 13px;
+  --font-size-base: 15px;
+  --font-size-md: 17px;
+  --font-size-lg: 20px;
+  --font-size-xl: 24px;
+  --font-size-2xl: 30px;
+  --font-size-3xl: 36px;
+
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-weight-extrabold: 800;
+
+  --line-height-tight: 1.2;
+  --line-height-normal: 1.5;
+
+  /* -----------------------------------------------------------
+     SHADOW SCALE
+  ----------------------------------------------------------- */
+  --shadow-sm: 0 2px 8px var(--shadow-panel);
+  --shadow-md: 0 8px 24px var(--shadow-panel);
+  --shadow-lg: 0 20px 45px var(--shadow-color);
+
+  /* -----------------------------------------------------------
+     MOTION
+     fast   = hover/press feedback, no meaning attached
+     base   = default UI transitions
+     slow   = state changes the user should register (status
+              change, success, card entrance)
+  ----------------------------------------------------------- */
+  --motion-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --motion-base: 220ms cubic-bezier(0.4, 0, 0.2, 1);
+  --motion-slow: 380ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* -----------------------------------------------------------
+   Dark mode overrides for tokens that need to shift (soft
+   backgrounds get darker/desaturated so text stays legible;
+   the base semantic hues stay the same so the palette reads
+   as "the same app", not a repaint).
+----------------------------------------------------------- */
+[data-theme="dark"] {
+  --color-primary-soft: rgba(37, 99, 235, 0.18);
+  --color-primary-soft-text: #93c5fd;
+
+  --color-accent-customer-soft: rgba(255, 107, 0, 0.15);
+
+  --color-success-soft: rgba(22, 163, 74, 0.18);
+  --color-success-soft-text: #4ade80;
+
+  --color-warning-soft: rgba(217, 119, 6, 0.18);
+  --color-warning-soft-text: #fbbf24;
+
+  --color-danger-soft: rgba(220, 38, 38, 0.18);
+  --color-danger-soft-text: #f87171;
+
+  --color-info-soft: rgba(37, 99, 235, 0.18);
+  --color-info-soft-text: #93c5fd;
+
+  --color-neutral-soft: rgba(148, 163, 184, 0.15);
+  --color-neutral-soft-text: #cbd5e1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-fast: 0ms;
+    --motion-base: 0ms;
+    --motion-slow: 0ms;
+  }
+}

@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "../services/axios";
-import { useAuth } from "../context/AuthContext";
+import api from "@/services/axios";
+import { useAuth } from "@/context/AuthContext";
+import { decodeToken } from "@/utils/decodeToken";
 import { FaShieldAlt, FaUserTie, FaEye, FaEyeSlash } from "react-icons/fa";
 
 // Self-contained: markup + styles in one file, same principle as before.
@@ -21,6 +22,16 @@ const PARTICLES = [
   { left: "14%", size: 2, dur: 25, delay: -8, op: 0.3 },
   { left: "63%", size: 3, dur: 21, delay: -13, op: 0.4 },
 ];
+
+// Which side of the toggle a given backend role belongs on. Admin owns
+// the "admin" card; everyone else (chef/waiter/cashier, and anything
+// added later) belongs on "staff". Centralized so adding a new staff
+// role later doesn't require touching the mismatch logic below.
+const ADMIN_ROLES = ["ADMIN"];
+
+function correctSideFor(role) {
+  return ADMIN_ROLES.includes(role) ? "admin" : "staff";
+}
 
 function Login() {
   const navigate = useNavigate();
@@ -44,8 +55,30 @@ function Login() {
         password,
       });
 
-      authLogin(response.data.token);
+      const token = response.data.token;
+      const decoded = decodeToken(token);
+      const actualSide = correctSideFor(decoded?.role);
 
+      // Credentials were valid, but this account doesn't belong on the
+      // card the person submitted from (e.g. a cashier's password typed
+      // into the Admin face). Don't log them in — the whole point of
+      // the toggle is that it's supposed to mean something. Clear the
+      // password (don't carry it across the flip), explain what
+      // happened, and flip the card to where this account actually
+      // belongs so they can just retype and go.
+      if (actualSide !== role) {
+        setPassword("");
+        setError(
+          actualSide === "admin"
+            ? "That's an admin account. Switching you to the Admin tab — go ahead and sign in there."
+            : "That's a staff account. Switching you to the Staff tab — go ahead and sign in there."
+        );
+
+        window.setTimeout(() => setRole(actualSide), 700);
+        return;
+      }
+
+      authLogin(token);
       navigate("/");
     } catch (err) {
       console.log(err.response);
@@ -334,6 +367,21 @@ function Login() {
           font-size: 13px;
         }
 
+        .rms-login-notice {
+          background: rgba(94,139,255,0.1);
+          border: 1px solid rgba(94,139,255,0.3);
+          color: #AFC4FF;
+          padding: 10px 13px;
+          border-radius: 8px;
+          margin-bottom: 18px;
+          font-size: 13px;
+        }
+        .rms-login-page[data-role="staff"] .rms-login-notice {
+          background: rgba(242,166,90,0.1);
+          border-color: rgba(242,166,90,0.3);
+          color: #FFD3A6;
+        }
+
         .rms-face-footer {
           margin-top: auto;
           padding-top: 18px;
@@ -395,7 +443,17 @@ function Login() {
               <h1>Admin sign in</h1>
               <p className="rms-sub">Full access to menu, orders, staff and inventory.</p>
 
-              {error && role === "admin" && <p className="rms-login-error">{error}</p>}
+              {error && role === "admin" && (
+                <p
+                  className={
+                    error.startsWith("That's")
+                      ? "rms-login-notice"
+                      : "rms-login-error"
+                  }
+                >
+                  {error}
+                </p>
+              )}
 
               <form onSubmit={login}>
                 <label className="rms-field-label" htmlFor="admin-username">Username</label>
@@ -444,7 +502,17 @@ function Login() {
               <h1>Staff sign in</h1>
               <p className="rms-sub">For chefs, cashiers and floor staff.</p>
 
-              {error && role === "staff" && <p className="rms-login-error">{error}</p>}
+              {error && role === "staff" && (
+                <p
+                  className={
+                    error.startsWith("That's")
+                      ? "rms-login-notice"
+                      : "rms-login-error"
+                  }
+                >
+                  {error}
+                </p>
+              )}
 
               <form onSubmit={login}>
                 <label className="rms-field-label" htmlFor="staff-username">Username</label>

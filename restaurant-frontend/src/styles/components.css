@@ -1,0 +1,380 @@
+/* ===========================================================
+   SHARED UI COMPONENT STYLES
+   Pairs with Button.jsx, Card.jsx, StatusBadge.jsx, PageHeader.jsx,
+   EmptyState.jsx, Modal.jsx, Toast (ToastContext).
+   Import once, e.g. in main.jsx: import "./styles/components.css"
+=========================================================== */
+
+/* -----------------------------------------------------------
+   BUTTON
+   Variants: primary | secondary | danger | ghost
+   States: default, hover, active, disabled, loading
+----------------------------------------------------------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  border: none;
+  border-radius: var(--radius-md);
+  padding: 12px 20px;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  transition: background var(--motion-fast), transform var(--motion-fast),
+    box-shadow var(--motion-fast), opacity var(--motion-fast);
+  white-space: nowrap;
+}
+
+.btn:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-primary {
+  background: var(--color-primary);
+  color: #fff;
+  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.25);
+}
+.btn-primary:hover:not(:disabled) {
+  background: var(--color-primary-hover);
+}
+
+.btn-customer {
+  background: var(--color-accent-customer);
+  color: #fff;
+  box-shadow: 0 8px 20px rgba(255, 107, 0, 0.25);
+}
+.btn-customer:hover:not(:disabled) {
+  background: var(--color-accent-customer-hover);
+}
+
+.btn-secondary {
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+}
+.btn-secondary:hover:not(:disabled) {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.btn-danger {
+  background: var(--color-danger);
+  color: #fff;
+}
+.btn-danger:hover:not(:disabled) {
+  background: var(--color-danger-hover);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-secondary);
+}
+.btn-ghost:hover:not(:disabled) {
+  background: var(--color-neutral-soft);
+  color: var(--text-primary);
+}
+
+.btn-sm {
+  padding: 8px 14px;
+  font-size: var(--font-size-sm);
+  border-radius: var(--radius-sm);
+}
+
+.btn-block {
+  width: 100%;
+}
+
+/* Loading state: label fades, spinner fades in, button doesn't
+   change size (spinner is absolutely positioned over the label) */
+.btn-spinner {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #fff;
+  animation: btn-spin 0.6s linear infinite;
+}
+.btn-secondary .btn-spinner,
+.btn-ghost .btn-spinner {
+  border: 2px solid var(--border-color);
+  border-top-color: var(--text-secondary);
+}
+
+@keyframes btn-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* -----------------------------------------------------------
+   CARD
+----------------------------------------------------------- */
+.ui-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--motion-base), transform var(--motion-base);
+  animation: card-enter var(--motion-slow) both;
+}
+
+.ui-card-interactive {
+  cursor: pointer;
+}
+.ui-card-interactive:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-3px);
+}
+
+@keyframes card-enter {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* -----------------------------------------------------------
+   STATUS BADGE
+   Pulses briefly whenever its status value changes — driven by
+   a key change in StatusBadge.jsx re-triggering the animation.
+----------------------------------------------------------- */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  animation: badge-change var(--motion-slow) both;
+}
+
+.status-badge-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+@keyframes badge-change {
+  0% { transform: scale(0.85); opacity: 0.5; }
+  60% { transform: scale(1.05); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.status-success { background: var(--color-success-soft); color: var(--color-success-soft-text); }
+.status-warning { background: var(--color-warning-soft); color: var(--color-warning-soft-text); }
+.status-danger  { background: var(--color-danger-soft);  color: var(--color-danger-soft-text); }
+.status-info    { background: var(--color-info-soft);    color: var(--color-info-soft-text); }
+.status-neutral { background: var(--color-neutral-soft); color: var(--color-neutral-soft-text); }
+
+/* -----------------------------------------------------------
+   PAGE HEADER
+----------------------------------------------------------- */
+.page-header-ui {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  margin-bottom: var(--space-8);
+}
+
+.page-header-eyebrow {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 2px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  margin: 0 0 var(--space-2);
+}
+
+.page-header-title {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.page-header-subtitle {
+  font-size: var(--font-size-base);
+  color: var(--text-secondary);
+  margin: var(--space-1) 0 0;
+}
+
+.page-header-actions {
+  display: flex;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+/* -----------------------------------------------------------
+   EMPTY STATE
+----------------------------------------------------------- */
+.empty-state-ui {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: var(--space-12) var(--space-6);
+  color: var(--text-muted);
+  animation: card-enter var(--motion-slow) both;
+}
+
+.empty-state-icon {
+  font-size: 40px;
+  margin-bottom: var(--space-4);
+  color: var(--text-muted);
+  opacity: 0.7;
+}
+
+.empty-state-title {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+  margin: 0 0 var(--space-1);
+}
+
+.empty-state-body {
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
+  max-width: 320px;
+  margin: 0;
+}
+
+/* -----------------------------------------------------------
+   TABLE STATUS TILE
+   Pairs with TableStatusTile.jsx. Border/background come from
+   the same status-* tone classes as StatusBadge, so a table's
+   color and a status pill's color always agree.
+----------------------------------------------------------- */
+.table-tile {
+  border: 2px solid transparent;
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  text-align: center;
+  cursor: pointer;
+  font-weight: var(--font-weight-semibold);
+  transition: transform var(--motion-fast), box-shadow var(--motion-fast);
+  font-family: inherit;
+}
+
+.table-tile:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+
+.table-tile-number {
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-base);
+}
+
+.table-tile-status {
+  font-size: var(--font-size-xs);
+  margin-top: 2px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.table-tile.status-success { background: var(--color-success-soft); border-color: var(--color-success); color: var(--color-success-soft-text); }
+.table-tile.status-danger  { background: var(--color-danger-soft);  border-color: var(--color-danger);  color: var(--color-danger-soft-text); }
+.table-tile.status-warning { background: var(--color-warning-soft); border-color: var(--color-warning); color: var(--color-warning-soft-text); }
+
+/* -----------------------------------------------------------
+   MODAL
+   Overlay fades, card scales in slightly — replaces the raw
+   .modal-overlay/.modal in global.css and Tables.jsx's
+   hand-rolled inline version.
+----------------------------------------------------------- */
+.modal-overlay-ui {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: var(--space-4);
+  animation: overlay-in var(--motion-base) both;
+}
+
+.modal-card-ui {
+  background: var(--bg-surface);
+  border-radius: var(--radius-xl);
+  padding: var(--space-8);
+  width: 100%;
+  max-width: 440px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-lg);
+  animation: modal-in var(--motion-slow) both;
+}
+
+@keyframes overlay-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes modal-in {
+  from { opacity: 0; transform: scale(0.96) translateY(8px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* -----------------------------------------------------------
+   TOAST
+   Single system (replaces the conflicting duplicate in
+   toaststyle.css). Slides in from top-right, colored left
+   border communicates type without needing a solid color block.
+----------------------------------------------------------- */
+.toast-container-ui {
+  position: fixed;
+  top: var(--space-5);
+  right: var(--space-5);
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  pointer-events: none;
+}
+
+.toast-ui {
+  min-width: 260px;
+  max-width: 380px;
+  padding: 14px 18px;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-lg);
+  border-left: 4px solid var(--color-success);
+  pointer-events: auto;
+  animation: toast-in var(--motion-slow) both;
+}
+
+.toast-ui-error {
+  border-left-color: var(--color-danger);
+}
+
+@keyframes toast-in {
+  from { opacity: 0; transform: translateX(24px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@media (max-width: 600px) {
+  .toast-container-ui {
+    left: var(--space-4);
+    right: var(--space-4);
+  }
+  .toast-ui {
+    max-width: none;
+    width: 100%;
+  }
+}

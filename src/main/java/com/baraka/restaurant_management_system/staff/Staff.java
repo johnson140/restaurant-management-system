@@ -1,7 +1,8 @@
 package com.baraka.restaurant_management_system.staff;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 
 @Entity
 @Table(
@@ -16,19 +17,36 @@ public class Staff {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
+    @NotBlank(message = "Username is required")
     @Column(nullable = false, unique = true)
     private String username;
 
-    @JsonIgnore
+    // IMPORTANT: this used to be @JsonIgnore, which blocks Jackson in
+    // BOTH directions — it stops password from being serialized back to
+    // the browser (good, that part was intentional) but it ALSO stops
+    // an incoming request body's "password" field from being bound onto
+    // this object at all (bad — this is why staff creation was silently
+    // losing the password). WRITE_ONLY keeps the "never send it back"
+    // behavior while still allowing it to be read from requests.
+    //
+    // Password is optional at the bean-validation level (no @NotBlank)
+    // because PUT /staff/{id} treats a blank password as "leave it
+    // unchanged" — see StaffServiceImpl#updateStaff. POST /staff (create)
+    // enforces it's non-blank in StaffServiceImpl instead, since that's
+    // a create-only rule.
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @Column(nullable = false)
     private String password;
 
+    @NotBlank(message = "Name is required")
     @Column(nullable = false)
     private String name;
 
+    @NotBlank(message = "Role is required")
     @Column(nullable = false)
     private String role;
 
+    @NotBlank(message = "Phone number is required")
     @Column(nullable = false)
     private String phoneNumber;
 

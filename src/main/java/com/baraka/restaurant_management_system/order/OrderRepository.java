@@ -14,4 +14,8 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
 
     List<Order> findByStatusOrderByCreatedAtAsc(String status);
 
+    List<Order> findByRatingIsNotNullOrderByIdDesc();
+
+    boolean existsByTableNumberAndStatusNotIn(int tableNumber, java.util.List<String> statuses);
+
 }

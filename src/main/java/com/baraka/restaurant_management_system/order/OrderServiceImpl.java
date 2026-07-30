@@ -3,6 +3,8 @@ package com.baraka.restaurant_management_system.order;
 import com.baraka.restaurant_management_system.menuitem.MenuItem;
 import com.baraka.restaurant_management_system.menuitem.MenuItemRepository;
 import com.baraka.restaurant_management_system.orderitem.OrderItem;
+import com.baraka.restaurant_management_system.table.RestaurantTable;
+import com.baraka.restaurant_management_system.table.RestaurantTableRepository;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -15,15 +17,17 @@ public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepository;
     private final MenuItemRepository menuItemRepository;
+    private final RestaurantTableRepository restaurantTableRepository;
 
     public OrderServiceImpl(
             OrderRepository orderRepository,
-            MenuItemRepository menuItemRepository
+            MenuItemRepository menuItemRepository,
+            RestaurantTableRepository restaurantTableRepository
     ) {
         this.orderRepository = orderRepository;
         this.menuItemRepository = menuItemRepository;
+        this.restaurantTableRepository = restaurantTableRepository;
     }
-
 
     @Override
     public Order createOrder(OrderRequest request) {
@@ -77,8 +81,27 @@ public class OrderServiceImpl implements OrderService {
 
         order.setEstimatedPreparationTime(estimatedTime);
 
-        return orderRepository.save(order);
+        Order saved = orderRepository.save(order);
+
+        // A new order means someone is now seated at this table — flip
+        // it to OCCUPIED automatically, regardless of what it was before.
+        System.out.println("DEBUG: attempting to occupy table " + request.getTableNumber());
+
+        restaurantTableRepository.findAll().stream()
+                .filter(t -> t.getTableNumber() == request.getTableNumber())
+                .findFirst()
+                .ifPresentOrElse(
+                        table -> {
+                            System.out.println("DEBUG: found table id=" + table.getId() + ", setting OCCUPIED");
+                            table.setStatus("OCCUPIED");
+                            restaurantTableRepository.save(table);
+                        },
+                        () -> System.out.println("DEBUG: no table found matching tableNumber " + request.getTableNumber())
+                );
+
+        return saved;
     }
+
     @Override
     public List<Order> getAllOrders() {
         return orderRepository.findAll();
@@ -99,7 +122,6 @@ public class OrderServiceImpl implements OrderService {
         );
     }
 
-
     @Override
     public Order getLatestOrderForTable(int tableNumber) {
 
@@ -109,7 +131,34 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public Order updateOrderStatus(int id, String status) {
+    public List<Order> getReviewedOrders() {
+        return orderRepository.findByRatingIsNotNullOrderByIdDesc();
+    }
+
+    @Override
+    public Order submitReview(int id, Integer rating, String comment) {
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Order not found."));
+
+        order.setRating(rating);
+        order.setReviewComment(comment);
+        order.setReviewRead(false);
+
+        return orderRepository.save(order);
+    }
+
+    @Override
+    public Order markReviewRead(int id) {
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Order not found."));
+
+        order.setReviewRead(true);
+
+        return orderRepository.save(order);
+    }
+
+    @Override
+    public Order updateOrderStatus(int id, String status, String paymentMethod) {
 
         Order order = orderRepository.findById(id)
                 .orElseThrow(() ->
@@ -133,6 +182,10 @@ public class OrderServiceImpl implements OrderService {
                 throw new RuntimeException("Invalid order status.");
         }
 
+        if (paymentMethod != null && !paymentMethod.isBlank()) {
+            order.setPaymentMethod(paymentMethod.toUpperCase());
+        }
+
         if (newStatus.equals("SERVED")) {
             order.setServedAt(LocalDateTime.now());
         }
@@ -141,8 +194,24 @@ public class OrderServiceImpl implements OrderService {
             order.setPaidAt(LocalDateTime.now());
         }
 
-        return orderRepository.save(order);
-    }
+        Order saved = orderRepository.save(order);
 
+        // Once the bill is settled (or the order is marked completed
+        // directly), the table isn't occupied by an active diner
+        // anymore — but it's also not ready for a new customer until
+        // staff physically clears it. NEEDS_CLEANING is that in-between
+        // state; only a manual action moves it to AVAILABLE from here.
+        if (newStatus.equals("PAID") || newStatus.equals("COMPLETED")) {
+            restaurantTableRepository.findAll().stream()
+                    .filter(t -> t.getTableNumber() == order.getTableNumber())
+                    .findFirst()
+                    .ifPresent(table -> {
+                        table.setStatus("NEEDS_CLEANING");
+                        restaurantTableRepository.save(table);
+                    });
+        }
+
+        return saved;
+    }
 
 }

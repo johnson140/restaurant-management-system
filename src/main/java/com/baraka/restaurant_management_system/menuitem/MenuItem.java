@@ -16,6 +16,20 @@ public class MenuItem {
     private boolean available = true;
     private String category;
 
+    // Tri-state diet classification:
+    //   TRUE  = Veg
+    //   FALSE = Non-Veg
+    //   NULL  = Default (no classification — e.g. drinks; shows no tag
+    //           and appears on both Veg and Non-Veg views on the
+    //           customer page)
+    //
+    // Must be the boxed Boolean, not primitive boolean — a primitive
+    // can never represent null, so it was silently collapsing every
+    // "Default" selection down to false the moment Jackson deserialized
+    // the request body.
+    @Column(nullable = true)
+    private Boolean veg = true;
+
     @Column(nullable = false)
     private int preparationTime = 10;
 
@@ -74,6 +88,14 @@ public class MenuItem {
 
     public int getPreparationTime() {
         return preparationTime;
+    }
+
+    public Boolean getVeg() {
+        return veg;
+    }
+
+    public void setVeg(Boolean veg) {
+        this.veg = veg;
     }
 
     public void setPreparationTime(int preparationTime) {

@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { decodeToken, isTokenExpired } from "../utils/decodeToken";
+import { decodeToken, isTokenExpired } from "@/utils/decodeToken";
 
 const AuthContext = createContext(null);
 

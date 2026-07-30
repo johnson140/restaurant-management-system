@@ -26,18 +26,18 @@ public class IngredientController {
     }
 
     @GetMapping("/{id}")
-    public Ingredient getById(@PathVariable Integer id) {
+    public Ingredient getById(@PathVariable("id") Integer id) {
         return ingredientService.getIngredientById(id);
     }
 
     @PutMapping("/{id}")
-    public Ingredient update(@PathVariable Integer id,
+    public Ingredient update(@PathVariable("id") Integer id,
                              @Valid @RequestBody Ingredient ingredient) {
         return ingredientService.updateIngredient(id, ingredient);
     }
 
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable Integer id) {
+    public void delete(@PathVariable("id") Integer id) {
         ingredientService.deleteIngredient(id);
     }
 }

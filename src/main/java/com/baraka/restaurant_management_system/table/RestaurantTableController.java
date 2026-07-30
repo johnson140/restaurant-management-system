@@ -27,23 +27,23 @@ public class RestaurantTableController {
     }
 
     @GetMapping("/{id}")
-    public RestaurantTable getTableById(@PathVariable int id) {
+    public RestaurantTable getTableById(@PathVariable("id") int id) {
         return restaurantTableService.getTableById(id);
     }
 
     @GetMapping("/token/{token}")
-    public RestaurantTable getTableByToken(@PathVariable String token) {
+    public RestaurantTable getTableByToken(@PathVariable("token") String token) {
         return restaurantTableService.getTableByToken(token);
     }
 
     @PatchMapping("/{id}/status")
-    public RestaurantTable updateStatus(@PathVariable int id,
+    public RestaurantTable updateStatus(@PathVariable("id") int id,
                                         @RequestBody Map<String, String> body) {
         return restaurantTableService.updateStatus(id, body.get("status"));
     }
 
     @DeleteMapping("/{id}")
-    public void deleteTable(@PathVariable int id) {
+    public void deleteTable(@PathVariable("id") int id) {
         restaurantTableService.deleteTable(id);
     }
 }

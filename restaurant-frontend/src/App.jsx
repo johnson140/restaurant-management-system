@@ -1,34 +1,40 @@
 import { Routes, Route } from "react-router-dom";
 
+import Layout from "@/components/layout/Layout";
+import ProtectedRoute from "@/components/ProtectedRoute";
+import { useAuth } from "@/context/AuthContext";
 
-import Layout from "./components/layout/Layout";
-import ProtectedRoute from "./components/ProtectedRoute";
-import { useAuth } from "./context/AuthContext";
+// Admin pages
+import Dashboard from "@/pages/admin/Dashboard";
+import Orders from "@/pages/admin/Orders";
+import Menu from "@/pages/admin/Menu";
+import Tables from "@/pages/admin/Tables";
+import Inventory from "@/pages/admin/Inventory";
+import Staff from "@/pages/admin/Staff";
+import Analytics from "@/pages/admin/Analytics";
+import Settings from "@/pages/admin/Settings";
 
-import Dashboard from "./pages/Dashboard";
-import Orders from "./pages/Orders";
-import Menu from "./pages/Menu";
-import Inventory from "./pages/Inventory";
-import Staff from "./pages/Staff";
-import Login from "./pages/Login";
 
-import KitchenQueue from "./pages/chef/KitchenQueue";
-import ServiceBoard from "./pages/waiter/ServiceBoard";
 
-import CashierPage from "./pages/CashierPage";
-// NEW
-import CustomerOrderPage from "./pages/CustomerOrderPage";
+// Public pages
+import Login from "@/pages/Login";
+
+// Staff pages
+import KitchenQueue from "@/pages/chef/KitchenQueue";
+import ServiceBoard from "@/pages/waiter/ServiceBoard";
+import CashierPage from "@/pages/cashier/CashierPage";
+
+// Customer pages
+import CustomerOrderPage from "@/pages/customer/CustomerOrderPage";
+import ReceiptPage from "@/pages/customer/ReceiptPage";
+
 
 function RoleHome() {
   const { user } = useAuth();
 
-  if (user?.role === "CHEF") {
-    return <KitchenQueue />;
-  }
-
-  if (user?.role === "WAITER") {
-    return <ServiceBoard />;
-  }
+  if (user?.role === "CHEF") return <KitchenQueue />;
+  if (user?.role === "WAITER") return <ServiceBoard />;
+  if (user?.role === "CASHIER") return <CashierPage />;
 
   return <Dashboard />;
 }
@@ -36,21 +42,22 @@ function RoleHome() {
 export default function App() {
   return (
     <Routes>
-
       {/* ===========================
           PUBLIC ROUTES
       ============================ */}
 
-      <Route
-        path="/login"
-        element={<Login />}
-      />
+      <Route path="/login" element={<Login />} />
 
       {/* Customer QR Ordering */}
-      <Route
-        path="/customer"
-        element={<CustomerOrderPage />}
-      />
+      <Route path="/customer" element={<CustomerOrderPage />} />
+
+      {/* Digital receipt — opened by scanning the QR code on a paid order.
+          NOTE: DigitalReceipt.jsx used to also claim this path — that
+          duplicate route registration meant it silently never rendered
+          (React Router uses the first match). ReceiptPage is now the
+          single source of truth for this URL; DigitalReceipt.jsx can be
+          deleted once its contents are confirmed fully superseded. */}
+      <Route path="/receipt/:orderId" element={<ReceiptPage />} />
 
       {/* ===========================
           PROTECTED ROUTES
@@ -59,9 +66,7 @@ export default function App() {
       <Route
         path="/"
         element={
-          <ProtectedRoute
-            allowedRoles={["ADMIN", "CHEF", "WAITER"]}
-          >
+          <ProtectedRoute allowedRoles={["ADMIN", "CHEF", "WAITER", "CASHIER"]}>
             <Layout>
               <RoleHome />
             </Layout>
@@ -72,9 +77,7 @@ export default function App() {
       <Route
         path="/orders"
         element={
-          <ProtectedRoute
-            allowedRoles={["ADMIN"]}
-          >
+          <ProtectedRoute allowedRoles={["ADMIN"]}>
             <Layout>
               <Orders />
             </Layout>
@@ -85,9 +88,7 @@ export default function App() {
       <Route
         path="/menu"
         element={
-          <ProtectedRoute
-            allowedRoles={["ADMIN"]}
-          >
+          <ProtectedRoute allowedRoles={["ADMIN"]}>
             <Layout>
               <Menu />
             </Layout>
@@ -96,37 +97,69 @@ export default function App() {
       />
 
       <Route
+        path="/tables"
+        element={
+          <ProtectedRoute allowedRoles={["ADMIN"]}>
+            <Layout>
+              <Tables />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
         path="/inventory"
         element={
-          <ProtectedRoute
-            allowedRoles={["ADMIN"]}
-          >
+          <ProtectedRoute allowedRoles={["ADMIN"]}>
             <Layout>
               <Inventory />
             </Layout>
           </ProtectedRoute>
         }
       />
-    <Route
+
+      <Route
         path="/cashier"
-        element={<CashierPage />}
-    />
+        element={
+          <ProtectedRoute allowedRoles={["ADMIN", "CASHIER"]}>
+            <Layout>
+              <CashierPage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
 
       <Route
         path="/staff"
         element={
-          <ProtectedRoute
-            allowedRoles={["ADMIN"]}
-          >
+          <ProtectedRoute allowedRoles={["ADMIN"]}>
             <Layout>
               <Staff />
             </Layout>
           </ProtectedRoute>
         }
       />
+         <Route
+                path="/analytics"
+                element={
+                  <ProtectedRoute allowedRoles={["ADMIN"]}>
+                    <Layout>
+                      <Analytics />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
 
-    </Routes>
-
-
-  );
-}
+              <Route
+                path="/settings"
+                element={
+                  <ProtectedRoute allowedRoles={["ADMIN"]}>
+                    <Layout>
+                      <Settings />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+            </Routes>
+        );
+      }

@@ -1,3 +1,4 @@
+// order/OrderService.java — full file
 package com.baraka.restaurant_management_system.order;
 
 import java.util.List;
@@ -12,8 +13,14 @@ public interface OrderService {
 
     Order getLatestOrderForTable(int tableNumber);
 
-    Order updateOrderStatus(int id, String status);
+    Order updateOrderStatus(int id, String status, String paymentMethod);
 
     List<Order> getPendingPayments();
+
+    Order submitReview(int id, Integer rating, String comment);
+
+    List<Order> getReviewedOrders();
+
+    Order markReviewRead(int id);
 
 }

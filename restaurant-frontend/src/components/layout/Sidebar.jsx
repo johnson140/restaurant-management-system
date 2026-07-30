@@ -12,7 +12,7 @@ import {
   FaFire,
   FaConciergeBell,
 } from "react-icons/fa";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "@/context/AuthContext";
 
 // Nav is built per-role, not filtered from one master list — a Chef's
 // "home" link says Kitchen Queue, not Dashboard, because that's what it
@@ -81,15 +81,14 @@ export default function Sidebar() {
       </div>
 
       <div style={styles.user}>
-        <div style={styles.avatar}>
-          {user?.username?.[0]?.toUpperCase() || "?"}
-        </div>
-
-        <div>
-          <div style={styles.userName}>{user?.username || "Guest"}</div>
-          <div style={styles.online}>● {user?.role || "Offline"}</div>
-        </div>
-      </div>
+              <div style={styles.avatar}>
+                {user?.username?.[0]?.toUpperCase() || "?"}
+              </div>
+              <div>
+                <div style={styles.userName}>{user?.username || "Guest"}</div>
+                <div style={styles.online}>● {user?.role || "Offline"}</div>
+              </div>
+            </div>
     </aside>
   );
 }
