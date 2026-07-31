@@ -2,10 +2,12 @@ import { useEffect, useRef, useState } from "react";
 import api from "@/services/axios";
 import { useToast } from "@/context/ToastContext";
 
+
 // How the cashier queue polls for new PAYMENT_REQUESTED orders. Kept in
 // one place so it's easy to tune, and so KitchenQueue/ServiceBoard can
 // eventually match it for consistency across staff pages.
 const POLL_INTERVAL_MS = 3000;
+const RECON_LS_KEY = "dineflow_reconciliations";
 
 // Same two-tone chime used on the customer side, so the "something
 // happened" sound is consistent across the whole app.
@@ -68,6 +70,11 @@ export default function CashierPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [confirmingId, setConfirmingId] = useState(null);
+
+  // End-of-day reconciliation state
+  const [countedCash, setCountedCash] = useState("");
+  const [reconSaved, setReconSaved] = useState(null);
+  const [todaysPaidCash, setTodaysPaidCash] = useState(0);
 
   const { showToast } = useToast();
 
@@ -132,6 +139,22 @@ export default function CashierPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Pull today's paid cash orders separately, since the pending-payments
+  // endpoint above only tracks orders still awaiting confirmation.
+  useEffect(() => {
+    api
+      .get("/orders")
+      .then((res) => {
+        const today = new Date().toDateString();
+        const total = res.data
+          .filter((o) => o.status === "PAID" && o.paymentMethod === "CASH")
+          .filter((o) => new Date(o.paidAt || o.createdAt).toDateString() === today)
+          .reduce((sum, o) => sum + (o.totalAmount || 0), 0);
+        setTodaysPaidCash(total);
+      })
+      .catch(console.error);
+  }, []);
+
   async function confirmPayment(id, tableNumber) {
     setConfirmingId(id);
 
@@ -144,6 +167,26 @@ export default function CashierPage() {
     } finally {
       setConfirmingId(null);
     }
+  }
+
+  function saveReconciliation() {
+    const counted = Number(countedCash);
+    if (isNaN(counted)) return;
+
+    const report = {
+      date: new Date().toDateString(),
+      expectedCash: todaysPaidCash,
+      countedCash: counted,
+      difference: counted - todaysPaidCash,
+      savedAt: new Date().toISOString(),
+    };
+
+    const existing = JSON.parse(localStorage.getItem(RECON_LS_KEY) || "[]");
+    existing.push(report);
+    localStorage.setItem(RECON_LS_KEY, JSON.stringify(existing));
+
+    setReconSaved(report);
+    showToast("Reconciliation saved", "success");
   }
 
   const cashOrders = orders.filter((o) => o.paymentMethod === "CASH");
@@ -226,6 +269,69 @@ export default function CashierPage() {
           </div>
         </section>
       )}
+
+      <section style={{ marginTop: 40 }}>
+        <div style={styles.sectionHead}>
+          <h2 style={styles.sectionTitle}>End-of-Day Reconciliation</h2>
+          <p style={styles.sectionHint}>
+            Expected cash today: ₹{todaysPaidCash}
+          </p>
+        </div>
+
+        <div style={{ ...styles.card, maxWidth: 380 }}>
+          <label style={{ fontSize: 13, fontWeight: 700, color: "#555" }}>
+            Cash counted
+          </label>
+          <input
+            type="number"
+            value={countedCash}
+            onChange={(e) => setCountedCash(e.target.value)}
+            style={{
+              width: "100%",
+              padding: 12,
+              marginTop: 8,
+              marginBottom: 14,
+              borderRadius: 10,
+              border: "1px solid #ddd",
+              fontSize: 15,
+              boxSizing: "border-box",
+            }}
+            placeholder="Enter amount"
+          />
+
+          <button
+            style={{
+              ...styles.confirmButton,
+              opacity: countedCash === "" ? 0.6 : 1,
+              cursor: countedCash === "" ? "not-allowed" : "pointer",
+            }}
+            onClick={saveReconciliation}
+            disabled={countedCash === ""}
+          >
+            Save Reconciliation
+          </button>
+
+          {reconSaved && (
+            <div style={{ marginTop: 16, fontSize: 14 }}>
+              <div>Expected: ₹{reconSaved.expectedCash}</div>
+              <div>Counted: ₹{reconSaved.countedCash}</div>
+              <div
+                style={{
+                  fontWeight: 800,
+                  marginTop: 4,
+                  color: reconSaved.difference === 0 ? "#2e7d32" : "#c62828",
+                }}
+              >
+                {reconSaved.difference === 0
+                  ? "Balanced ✅"
+                  : reconSaved.difference > 0
+                  ? `Excess: ₹${reconSaved.difference}`
+                  : `Shortage: ₹${Math.abs(reconSaved.difference)}`}
+              </div>
+            </div>
+          )}
+        </div>
+      </section>
     </div>
   );
 }
