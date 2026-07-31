@@ -11,12 +11,18 @@ export default function Analytics() {
   const [orders, setOrders] = useState([]);
   const token = localStorage.getItem("token");
 
-  useEffect(() => {
-    fetch(`${API_BASE}/orders`, { headers: { Authorization: `Bearer ${token}` } })
-      .then((r) => r.json())
-      .then(setOrders)
-      .catch(console.error);
-  }, []);
+ useEffect(() => {
+   function loadOrders() {
+     fetch(`${API_BASE}/orders`, { headers: { Authorization: `Bearer ${token}` } })
+       .then((r) => r.json())
+       .then(setOrders)
+       .catch(console.error);
+   }
+
+   loadOrders();
+   const interval = setInterval(loadOrders, 5000);
+   return () => clearInterval(interval);
+ }, []);
 
   const last7 = [...Array(7)].map((_, i) => {
     const d = new Date();
