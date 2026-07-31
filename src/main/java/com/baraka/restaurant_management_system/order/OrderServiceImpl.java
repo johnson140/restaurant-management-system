@@ -85,19 +85,16 @@ public class OrderServiceImpl implements OrderService {
 
         // A new order means someone is now seated at this table — flip
         // it to OCCUPIED automatically, regardless of what it was before.
-        System.out.println("DEBUG: attempting to occupy table " + request.getTableNumber());
-
+        // This is the ONLY place a table is claimed for real: viewing
+        // the kiosk QR or browsing the menu never touches its status —
+        // only actually placing an order does.
         restaurantTableRepository.findAll().stream()
                 .filter(t -> t.getTableNumber() == request.getTableNumber())
                 .findFirst()
-                .ifPresentOrElse(
-                        table -> {
-                            System.out.println("DEBUG: found table id=" + table.getId() + ", setting OCCUPIED");
-                            table.setStatus("OCCUPIED");
-                            restaurantTableRepository.save(table);
-                        },
-                        () -> System.out.println("DEBUG: no table found matching tableNumber " + request.getTableNumber())
-                );
+                .ifPresent(table -> {
+                    table.setStatus("OCCUPIED");
+                    restaurantTableRepository.save(table);
+                });
 
         return saved;
     }
@@ -194,24 +191,18 @@ public class OrderServiceImpl implements OrderService {
             order.setPaidAt(LocalDateTime.now());
         }
 
-        Order saved = orderRepository.save(order);
+        // NOTE: the table's status is deliberately NOT touched here
+        // anymore. Two-state model now: OCCUPIED while there's any
+        // active session at the table (including the post-payment
+        // review/rating screens — the customer is still physically
+        // there), AVAILABLE once the customer actually finishes the
+        // session. That transition happens from the customer side —
+        // see CustomerOrderPage.jsx's finishSession(), which PATCHes
+        // this table straight to AVAILABLE once review is submitted
+        // or skipped. This avoids a NEEDS_CLEANING middle state and
+        // the extra manual staff step that came with it.
 
-        // Once the bill is settled (or the order is marked completed
-        // directly), the table isn't occupied by an active diner
-        // anymore — but it's also not ready for a new customer until
-        // staff physically clears it. NEEDS_CLEANING is that in-between
-        // state; only a manual action moves it to AVAILABLE from here.
-        if (newStatus.equals("PAID") || newStatus.equals("COMPLETED")) {
-            restaurantTableRepository.findAll().stream()
-                    .filter(t -> t.getTableNumber() == order.getTableNumber())
-                    .findFirst()
-                    .ifPresent(table -> {
-                        table.setStatus("NEEDS_CLEANING");
-                        restaurantTableRepository.save(table);
-                    });
-        }
-
-        return saved;
+        return orderRepository.save(order);
     }
 
 }

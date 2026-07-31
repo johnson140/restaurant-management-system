@@ -2,11 +2,13 @@ package com.baraka.restaurant_management_system.table;
 
 import com.baraka.restaurant_management_system.order.OrderRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.http.HttpStatus;
 
 import java.security.SecureRandom;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class RestaurantTableServiceImpl implements RestaurantTableService {
@@ -72,10 +74,12 @@ public class RestaurantTableServiceImpl implements RestaurantTableService {
 
         String newStatus = status.toUpperCase();
 
-        // Neither AVAILABLE nor NEEDS_CLEANING can be set manually while
-        // the table still has an order the customer hasn't paid for —
-        // that decision belongs to the payment flow, not a manual click.
-        if (newStatus.equals("AVAILABLE") || newStatus.equals("NEEDS_CLEANING")) {
+        // AVAILABLE can't be set manually (by staff, or by the
+        // customer-side auto-release call) while the table still has an
+        // order that hasn't reached PAID/COMPLETED — that decision
+        // belongs to the payment flow, not a manual click or an early
+        // "finish session" call.
+        if (newStatus.equals("AVAILABLE")) {
             boolean hasActiveOrder = orderRepository.existsByTableNumberAndStatusNotIn(
                     table.getTableNumber(), TERMINAL_STATUSES
             );
@@ -101,6 +105,28 @@ public class RestaurantTableServiceImpl implements RestaurantTableService {
         }
 
         restaurantTableRepository.deleteById(id);
+    }
+
+    // @Transactional here is what makes the lock meaningful: the row lock
+    // acquired by findFirstByStatusOrderByIdAsc is held for the whole
+    // method body and only released when this transaction commits (right
+    // after save()) or rolls back. A second simultaneous call blocks at
+    // the SELECT until the first one finishes, then sees the now-updated
+    // status and correctly moves on to the next AVAILABLE row (or finds
+    // none left, if this was the last table).
+    @Override
+    @Transactional
+    public Optional<RestaurantTable> assignAvailableTable() {
+
+        Optional<RestaurantTable> table =
+                restaurantTableRepository.findFirstByStatusOrderByIdAsc("AVAILABLE");
+
+        table.ifPresent(t -> {
+            t.setStatus("OCCUPIED");
+            restaurantTableRepository.save(t);
+        });
+
+        return table;
     }
 
     private String generateToken() {
