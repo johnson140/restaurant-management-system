@@ -1018,7 +1018,7 @@ export default function CustomerOrderPage() {
             <div>₹{totalPrice.toFixed(2)}</div>
           </div>
 
-          <div style={{ display: "flex", gap: 10 }}>
+         <div style={{ display: "flex", gap: 10, flexWrap: "wrap", flex: 1, minWidth: 0 }}>
             <input
               placeholder="Your name"
               value={customerName}
@@ -1100,7 +1100,7 @@ const styles = {
   page: {
     maxWidth: 1200,
     margin: "0 auto",
-    padding: 20,
+    padding: "20px 14px",
     paddingBottom: 120,
     fontFamily: "Arial, sans-serif",
     background: "#fafafa",
@@ -1187,7 +1187,7 @@ const styles = {
     textAlign: "center",
   },
   confirmText: { marginBottom: 20, fontSize: 15, lineHeight: 1.5 },
-  grid: { display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(260px,1fr))", gap: 20 },
+  grid: { display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(min(260px,100%),1fr))", gap: 16 },
   card: { background: "#fff", borderRadius: 15, overflow: "hidden", boxShadow: "0 3px 12px rgba(0,0,0,.08)" },
   image: { width: "100%", height: 190, objectFit: "cover" },
   price: { color: "#ff6b00", fontWeight: 700, fontSize: 22, marginLeft: 15 },
@@ -1214,21 +1214,23 @@ const styles = {
     fontSize: 20,
     cursor: "pointer",
   },
-  cartBar: {
-    position: "fixed",
-    bottom: 20,
-    left: "50%",
-    transform: "translateX(-50%)",
-    width: "min(900px,95%)",
-    background: "#111",
-    color: "#fff",
-    borderRadius: 15,
-    padding: 20,
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    boxShadow: "0 10px 30px rgba(0,0,0,.25)",
-  },
+cartBar: {
+  position: "fixed",
+  bottom: 20,
+  left: "50%",
+  transform: "translateX(-50%)",
+  width: "min(900px,95%)",
+  background: "#111",
+  color: "#fff",
+  borderRadius: 15,
+  padding: 16,
+  display: "flex",
+  flexWrap: "wrap",
+  justifyContent: "space-between",
+  alignItems: "center",
+  gap: 10,
+  boxShadow: "0 10px 30px rgba(0,0,0,.25)",
+},
   checkoutButton: {
     background: "#ff6b00",
     color: "#fff",

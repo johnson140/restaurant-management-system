@@ -1,4 +1,3 @@
-// components/modals/InventoryModal.jsx — full file
 import { useEffect, useState } from "react";
 import Modal from "@/components/ui/Modal";
 import Button from "@/components/ui/Button";
