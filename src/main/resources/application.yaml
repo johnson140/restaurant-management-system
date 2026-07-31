@@ -3,9 +3,9 @@ spring:
     name: restaurant_management_system
 
   datasource:
-    url: jdbc:${DB_URL}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
+    url: jdbc:postgresql://${PGHOST}:${PGPORT}/${PGDATABASE}
+    username: ${PGUSER}
+    password: ${PGPASSWORD}
 
   jpa:
     show-sql: true
