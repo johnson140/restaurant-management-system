@@ -8,18 +8,22 @@
  * Consolidating here means a status only needs a color decision once.
  *
  * `tone` maps directly to a StatusBadge/status-* CSS class.
+ *
+ * NOTE: table status is intentionally just two states — AVAILABLE and
+ * OCCUPIED. NEEDS_CLEANING was removed: the flip back to AVAILABLE
+ * happens automatically once a customer finishes/skips their review
+ * (see CustomerOrderPage.jsx finishSession()), so there's no manual
+ * "cleaning" waypoint for staff to manage.
  */
 
 export const TABLE_STATUS_META = {
   AVAILABLE: { label: "Available", tone: "success" },
   OCCUPIED: { label: "Occupied", tone: "danger" },
-  NEEDS_CLEANING: { label: "Needs Cleaning", tone: "warning" },
 };
 
 export const TABLE_STATUS_CYCLE = {
   AVAILABLE: "OCCUPIED",
-  OCCUPIED: "NEEDS_CLEANING",
-  NEEDS_CLEANING: "AVAILABLE",
+  OCCUPIED: "AVAILABLE",
 };
 
 export function getTableStatusMeta(status) {

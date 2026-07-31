@@ -2,11 +2,14 @@ import { getFoodImage } from "@/utils/menuImages";
 import { useEffect, useMemo, useRef, useState } from "react";
 import paymentSuccess from "@/assets/sounds/updatepelgo-success-221935.mp3";
 
-// Resolves relative to whichever device is viewing the page. On your PC
-// that's still localhost; on a phone on the same network, this becomes
-// the PC's LAN IP automatically — because that's what's in the URL bar
-// once you open the page via the LAN address instead of "localhost".
-const API_BASE = `http://${window.location.hostname}:8080`;
+// Same env-var fix as services/axios.js — this file was still on the
+// old `http://${hostname}:8080` pattern, which is why it would have
+// broken in production exactly like the login page did (trying to hit
+// <your-vercel-domain>:8080 instead of Railway). Falls back to the old
+// LAN-IP behavior only if the env var isn't set, so local dev on your
+// phone still works unchanged.
+const API_BASE =
+  import.meta.env.VITE_API_URL || `http://${window.location.hostname}:8080`;
 
 // States where the backend order status can still change and the page
 // needs to react to it. REVIEW/RATING/THANK_YOU are all *after* the order
@@ -119,10 +122,20 @@ export default function CustomerOrderPage() {
   // time the tick-chime timeout fires later.
   const audioCtxRef = useRef(null);
 
-  const token = new URLSearchParams(window.location.search).get("token");
-
   useEffect(() => {
-    loadPage();
+    const urlToken = new URLSearchParams(window.location.search).get("token");
+
+    if (urlToken) {
+      loadPage(urlToken);
+      return;
+    }
+
+    // No token at all means this wasn't opened via a real table QR (the
+    // kiosk display always encodes one). Table selection now happens on
+    // the kiosk screen, not here — this page just needs a token handed
+    // to it.
+    setError("Please scan the QR code displayed at the entrance to get started.");
+    setLoading(false);
   }, []);
 
   // Play the success chime once, timed to land just as the tick mark
@@ -199,14 +212,14 @@ export default function CustomerOrderPage() {
     return () => clearInterval(interval);
   }, [screen, table]);
 
-  async function loadPage() {
+  // Now takes the token explicitly instead of reading it from a
+  // module-scope variable, since the token might come from the URL
+  // immediately (per-table QR) or arrive a moment later from
+  // assignTable() (generic QR).
+  async function loadPage(tokenValue) {
     try {
-      if (!token) {
-        throw new Error("Invalid QR Code.");
-      }
-
       const [tableRes, menuRes] = await Promise.all([
-        fetch(`${API_BASE}/tables/token/${token}`),
+        fetch(`${API_BASE}/tables/token/${tokenValue}`),
         fetch(`${API_BASE}/menu`),
       ]);
 
@@ -373,9 +386,15 @@ export default function CustomerOrderPage() {
   }
 
   // Called once the dining session is genuinely over (after rating or
-  // skip). Clears everything so there's no leftover order to resurrect
-  // and the next customer at this table starts clean.
+  // skip). Clears everything so there's no leftover order to resurrect,
+  // and now ALSO releases the table back to AVAILABLE automatically —
+  // per your call, no waiter step required. Captures table?.id before
+  // the state reset below clears it, and fires the release request
+  // without blocking the screen transition (the customer shouldn't
+  // wait on this network call to see "Thank You").
   function finishSession() {
+    const tableId = table?.id;
+
     setCurrentOrder(null);
     setCart({});
     setCustomerName("");
@@ -386,6 +405,16 @@ export default function CustomerOrderPage() {
     setHoverRating(0);
     setReviewComment("");
     setScreen("THANK_YOU");
+
+    if (tableId) {
+      fetch(`${API_BASE}/tables/${tableId}/status`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "AVAILABLE" }),
+      }).catch((e) => {
+        console.log("Could not auto-release table:", e);
+      });
+    }
   }
 
   async function submitReview() {
@@ -1044,6 +1073,28 @@ const tickKeyframes = `
   50% { opacity: 0.3; }
 }
 `;
+
+// New: the "finding you a table" / "sorry, full" landing states.
+const assignStyles = {
+  page: {
+    minHeight: "100vh",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: "40px 24px",
+    textAlign: "center",
+    fontFamily: "Arial, sans-serif",
+    background: "#fff7f0",
+  },
+  pulse: {
+    fontSize: 64,
+    marginBottom: 20,
+    animation: "pulseSoft 2s ease-in-out infinite",
+  },
+  title: { fontSize: 26, margin: "0 0 10px", color: "#1a1a1a" },
+  sub: { fontSize: 16, color: "#666", maxWidth: 380, lineHeight: 1.6 },
+};
 
 const styles = {
   page: {

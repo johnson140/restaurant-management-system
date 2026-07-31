@@ -20,7 +20,12 @@ import {
   FaUsers
 } from "react-icons/fa6";
 
-const API_BASE = "http://localhost:8080";
+// Was hardcoded to "http://localhost:8080" — broke Staff/Tables/Menu
+// counts in production because the deployed site would try to call
+// itself on port 8080 instead of the Railway backend. Same bug class
+// as the login/axios/CustomerOrderPage fixes earlier.
+const API_BASE =
+  import.meta.env.VITE_API_URL || `http://${window.location.hostname}:8080`;
 
 export default function Dashboard() {
   const navigate = useNavigate();

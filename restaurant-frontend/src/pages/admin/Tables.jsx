@@ -9,7 +9,7 @@ import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 import StatusBadge from "@/components/ui/StatusBadge";
 import EmptyState from "@/components/ui/EmptyState";
-import { getTableStatusMeta, TABLE_STATUS_CYCLE } from "@/utils/statusMeta";
+import { getTableStatusMeta } from "@/utils/statusMeta";
 import { FaChair } from "react-icons/fa6";
 
 function customerUrlFor(token) {
@@ -35,14 +35,18 @@ function Tables() {
 
   useEffect(() => {
     fetchTables();
+    // Table status now changes only from backend events (order created
+    // -> OCCUPIED, review submitted/skipped -> AVAILABLE), never from a
+    // staff click here. Poll so this page reflects those automatic
+    // changes without a manual refresh.
+    const interval = setInterval(fetchTables, 5000);
+    return () => clearInterval(interval);
   }, []);
 
   async function fetchTables() {
     try {
       setLoading(true);
       const response = await api.get("/tables");
-      // Show tables in a stable, predictable order for staff scanning
-      // the floor, rather than whatever order the DB happens to return.
       const sorted = [...response.data].sort((a, b) => a.tableNumber - b.tableNumber);
       setTables(sorted);
     } catch (error) {
@@ -76,18 +80,6 @@ function Tables() {
       setCreating(false);
     }
   }
-
-  async function cycleStatus(table) {
-      const next = TABLE_STATUS_CYCLE[table.status] || "AVAILABLE";
-      try {
-        await api.patch(`/tables/${table.id}/status`, { status: next });
-        fetchTables();
-      } catch (error) {
-        console.error(error);
-        const backendMessage = error?.response?.data?.message || error?.response?.data?.error;
-        showToast(backendMessage || "Could not update table status", "error");
-      }
-    }
 
   async function confirmDelete() {
     try {
@@ -147,6 +139,8 @@ function Tables() {
               <Card key={table.id} className={`status-${meta.tone}`} style={css.tableCard}>
                 <div style={css.cardTop}>
                   <span style={css.tableNumber}>Table {table.tableNumber}</span>
+                  {/* Read-only — status is set automatically by checkout
+                      and by the customer's review flow, not by staff. */}
                   <StatusBadge status={table.status} label={meta.label} tone={meta.tone} />
                 </div>
 
@@ -164,10 +158,6 @@ function Tables() {
                 </button>
 
                 <div style={css.actions}>
-                  <Button size="sm" variant="secondary" block onClick={() => cycleStatus(table)}>
-                    Mark {TABLE_STATUS_CYCLE[table.status] || "AVAILABLE"}
-                  </Button>
-
                   <Button size="sm" variant="secondary" block onClick={() => copyLink(table.token)}>
                     Copy Link
                   </Button>

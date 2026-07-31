@@ -27,6 +27,7 @@ import CashierPage from "@/pages/cashier/CashierPage";
 // Customer pages
 import CustomerOrderPage from "@/pages/customer/CustomerOrderPage";
 import ReceiptPage from "@/pages/customer/ReceiptPage";
+import Kiosk from "@/pages/customer/Kiosk";
 
 
 function RoleHome() {
@@ -48,8 +49,15 @@ export default function App() {
 
       <Route path="/login" element={<Login />} />
 
-      {/* Customer QR Ordering */}
+      {/* Customer QR Ordering — always arrived at with a real ?token=,
+          which comes from scanning the QR shown on /kiosk. */}
       <Route path="/customer" element={<CustomerOrderPage />} />
+
+      {/* Entrance/front-of-house display. Left open on a laptop or
+          tablet; shows a live QR for one available table and swaps to
+          the next one automatically once that table is booked. No login
+          required — it's meant to run unattended, same as /customer. */}
+      <Route path="/kiosk" element={<Kiosk />} />
 
       {/* Digital receipt — opened by scanning the QR code on a paid order.
           NOTE: DigitalReceipt.jsx used to also claim this path — that

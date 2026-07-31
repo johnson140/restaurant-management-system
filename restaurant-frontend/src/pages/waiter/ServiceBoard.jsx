@@ -40,15 +40,11 @@ export default function ServiceBoard() {
     }
   }
 
-  async function setTableStatus(id, status) {
-    try {
-      await api.patch(`/tables/${id}/status`, { status });
-      loadData();
-    } catch (err) {
-      console.error(err);
-      showToast("Could not update table", "error");
-    }
-  }
+  // Table status is now fully automatic — OCCUPIED is set the moment a
+  // customer's checkout succeeds, and AVAILABLE is set automatically
+  // once the customer finishes/skips their review. Waiters can see
+  // status here but no longer have a control to override it, so
+  // TableStatusTile is rendered without an onSetStatus handler below.
 
   async function markServed(id) {
     try {
@@ -117,7 +113,10 @@ export default function ServiceBoard() {
               <EmptyState icon={<FaChair />} title="No tables yet." />
             ) : (
               tables.map((table) => (
-                <TableStatusTile key={table.id} table={table} onSetStatus={setTableStatus} />
+                // No onSetStatus passed — tile is view-only here.
+                // Status transitions happen automatically elsewhere
+                // (checkout and the customer review flow).
+                <TableStatusTile key={table.id} table={table} readOnly />
               ))
             )}
           </div>
