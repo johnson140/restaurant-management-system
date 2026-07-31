@@ -438,7 +438,9 @@ export default function CustomerOrderPage() {
       finishSession();
     }
   }
-
+    useEffect(() => {
+      document.documentElement.removeAttribute("data-theme");
+    }, []);
   // Auto-return to the menu a little while after Thank You, so the next
   // guest at this table isn't stuck looking at someone else's goodbye
   // screen. Manual button covers anyone who doesn't want to wait.
@@ -453,7 +455,7 @@ export default function CustomerOrderPage() {
   }, [screen]);
 
   if (loading) {
-    return <div style={styles.loading}>Loading Restaurant...</div>;
+    return <div style={styles.loading}>Loading Menu...</div>;
   }
 
   if (error) {
@@ -980,7 +982,7 @@ export default function CustomerOrderPage() {
           return (
             <div key={item.id} style={styles.card}>
               <img src={getFoodImage(item.name)} alt={item.name} style={styles.image} />
-              <h3>
+              <h3 style={{ color: "#1a1a1a", margin: "12px 15px 6px" }}>
                 <VegDot isVeg={item.veg} />
                 {item.name}
               </h3>
@@ -1186,7 +1188,7 @@ const styles = {
     maxWidth: 320,
     textAlign: "center",
   },
-  confirmText: { marginBottom: 20, fontSize: 15, lineHeight: 1.5 },
+  confirmText: { marginBottom: 20, fontSize: 15, lineHeight: 1.5, color: "#1a1a1a" },
   grid: { display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(min(260px,100%),1fr))", gap: 16 },
   card: { background: "#fff", borderRadius: 15, overflow: "hidden", boxShadow: "0 3px 12px rgba(0,0,0,.08)" },
   image: { width: "100%", height: 190, objectFit: "cover" },
