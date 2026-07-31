@@ -13,7 +13,7 @@ import pizza from "@/assets/menu/pizza.jpg";
 import salad from "@/assets/menu/salad.jpg";
 import sandwich from "@/assets/menu/sandwich.jpg";
 import vadaPav from "@/assets/menu/vada-pav.jpg";
-import chickenBiryani from "@/assets/menu/chicken-soup.jpg";
+import chickenBiryani from "@/assets/menu/chicken-biryani.jpg";
 import fallback from "@/assets/menu/default.jpg";
 
 
@@ -63,7 +63,7 @@ const rules = [
   // generic "chicken" kept last and broad on purpose, so any other
   // chicken dish not covered above still gets *something* better
   // than the blank default
-  { keywords: ["chicken"], image: foodImages.chickenBiryani },
+  { keywords: ["biryani"], image: foodImages.chickenBiryani },
 ];
 
 export function getFoodImage(name = "") {
