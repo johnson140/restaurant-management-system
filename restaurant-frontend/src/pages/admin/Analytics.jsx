@@ -4,7 +4,8 @@ import PageHeader from "@/components/ui/PageHeader";
 import Card from "@/components/ui/Card";
 import { FaClipboardList, FaIndianRupeeSign, FaChair, FaChartLine } from "react-icons/fa6";
 
-const API_BASE = "http://localhost:8080";
+const API_BASE =
+  import.meta.env.VITE_API_URL || `http://${window.location.hostname}:8080`;
 
 export default function Analytics() {
   const [orders, setOrders] = useState([]);

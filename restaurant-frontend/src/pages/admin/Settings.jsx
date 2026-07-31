@@ -9,7 +9,8 @@ import {
   FaDatabase, FaInfoCircle, FaSignOutAlt, FaCode, FaPen,
 } from "react-icons/fa";
 
-const API_BASE = "http://localhost:8080";
+const API_BASE =
+  import.meta.env.VITE_API_URL || `http://${window.location.hostname}:8080`;
 const LS_KEY = "dineflow_settings";
 
 function loadLocalSettings() {
@@ -142,7 +143,7 @@ export default function Settings() {
       <Section icon={<FaDatabase />} title="Data Export">
         <div style={css.exportRow}>
           <button style={css.btn} onClick={() => exportCsv("orders")}>Export Orders</button>
-          <button style={css.btn} onClick={() => exportCsv("inventory")}>Export Inventory</button>
+          <button style={css.btn} onClick={() => exportCsv("ingredients")}>Export Inventory</button>
           <button style={css.btn} onClick={() => exportCsv("staff")}>Export Staff</button>
         </div>
         {exportStatus && <div style={css.status}>{exportStatus}</div>}
